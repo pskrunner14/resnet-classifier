@@ -102,3 +102,6 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+datasets/train_signs.h5
+datasets/test_signs.h5
