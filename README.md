@@ -51,29 +51,40 @@ Now you are all set up!
 Training:
 
 `number of training examples = 1080`
+
 `X_train shape: (1080, 64, 64, 3)`
+
 `Y_train shape: (1080, 6)`
 
 
 `Epoch 20/20`
+
 `1080/1080 [==============================] - 63s 59ms/step - loss: 0.0219 - acc: 0.9944`
+
 `Loss = 0.0219`
+
 `Train Accuracy = 99.44% (0.9944)`
 
 Testing:
 
 `number of test examples = 120`
+
 `X_test shape: (120, 64, 64, 3)`
+
 `Y_test shape: (120, 6)`
 
 `120/120 [==============================] - 2s 18ms/step`
+
 `Loss = 0.1936`
+
 `Test Accuracy = 94.99% (0.9499)`
 
 Model Parameters:
 
 `Total params: 23,600,006`
+
 `Trainable params: 23,546,886`
+
 `Non-trainable params: 53,120`
 
 ## Built With
