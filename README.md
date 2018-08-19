@@ -2,11 +2,11 @@
 
 This is an Image Classifier that follows the Residual Network architecture with 50 layers that can be used to predict digits in sign language(0-5).
 
-![Residual Network](./datasets/images/resnet.png)
-
 In recent years, neural networks have become deeper, with state-of-the-art networks going from just a few layers (e.g., AlexNet) to over a hundred layers.
 
 The main benefit of a very deep network is that it can represent very complex functions. It can also learn features at many different levels of abstraction, from edges (at the lower layers) to very complex features (at the deeper layers). However, using a deeper network doesn't always help. A huge barrier to training them is vanishing gradients: very deep networks often have a gradient signal that goes to zero quickly, thus making gradient descent unbearably slow. 
+
+![Residual Network](./datasets/images/resnet.png)
 
 In ResNets, a "shortcut" or a "skip connection" allows the gradient to be directly backpropagated to earlier layers:
 
