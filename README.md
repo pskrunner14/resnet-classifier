@@ -34,15 +34,21 @@ The SIGNS dataset contains images of digits 0-5 in sign language
 
 In order to train the model and make predictions, you will need to install the required python packages:
 
-`pip install -r requirements.txt`
+```
+pip install -r requirements.txt
+```
 
 Now you can either open up a terminal and start training the model:
 
-`python train.py`
+```
+python train.py
+```
 
 Or directly run the prediction script which will load the pretrained model:
 
-`python predict.py`
+```
+python predict.py
+```
 
 Now you are all set up!
 
