@@ -7,25 +7,25 @@ In recent years, neural networks have become deeper, with state-of-the-art netwo
 The main benefit of a very deep network is that it can represent very complex functions. It can also learn features at many different levels of abstraction, from edges (at the lower layers) to very complex features (at the deeper layers). However, using a deeper network doesn't always help. A huge barrier to training them is vanishing gradients: very deep networks often have a gradient signal that goes to zero quickly, thus making gradient descent unbearably slow.
 
 <div align="center">
-   <img src="./images/resnet.png" width=280 height=250>
+   <img src="./images/resnet.png" width=350 height=280>
 </div>
 
 In ResNets, a "shortcut" or a "skip connection" allows the gradient to be directly backpropagated to earlier layers:
 
 <div align="center">
-   <img src="./images/skip_connection_kiank.png" width=280 height=250>
+   <img src="./images/skip_connection_kiank.png" width=350 height=250>
 </div>
 
 The "identity block" is the standard block used in ResNets, and corresponds to the case where the input activation (say a[l]) has the same dimension as the output activation (say a[l+2]):
 
 <div align="center">
-   <img src="./images/idblock2_kiank.png" width=280 height=250>
+   <img src="./images/idblock2_kiank.png" width=350 height=250>
 </div>
 
 Next, the ResNet "convolutional block" is the other type of block. You can use this type of block when the input and output dimensions don't match up. The difference here is that there is a CONV2D layer in the shortcut path:
 
 <div align="center">
-   <img src="./images/convblock_kiank.png" width=280 height=250>
+   <img src="./images/convblock_kiank.png" width=350 height=250>
 </div>
 
 The detailed structure of this ResNet-50 model:
@@ -51,10 +51,10 @@ Now you can either open up a terminal and start training the model:
 python train.py
 ```
 
-Or directly run the prediction script which will load the pretrained model:
+Or directly run the prediction script which will load the pretrained model and make a prediction on your test image:
 
 ```
-python predict.py
+python predict.py images/test.jpg
 ```
 
 Now you are all set up!
