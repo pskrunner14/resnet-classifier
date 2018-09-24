@@ -103,4 +103,5 @@ venv.bak/
 # mypy
 .mypy_cache/
 
-datasets/resnet50.h5
+datasets/*
+models/*

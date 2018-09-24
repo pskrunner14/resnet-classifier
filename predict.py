@@ -1,23 +1,30 @@
+import click
+import keras
 import numpy as np
-from keras.models import load_model
-from keras.preprocessing import image
-from keras.applications.imagenet_utils import preprocess_input
-import pydot
-from keras.utils.vis_utils import model_to_dot
-import scipy.misc
+
 from resnet_utils import convert_to_one_hot
 
-resnet50 = load_model('datasets/resnet50.h5')
+def make_prediction(model, path=None):
+    if path is None:
+        raise UserWarning('Image path should not be None!')
 
-img_path = 'datasets/images/my_image.jpg'
-img = image.load_img(img_path, target_size=(64, 64))
-x = image.img_to_array(img)
-x = np.expand_dims(x, axis=0)
-x = preprocess_input(x)
-print('Input image shape:', x.shape)
-print("class prediction vector [p(0), p(1), p(2), p(3), p(4), p(5)] : ")
-preds = resnet50.predict(x)
-print()
-print(preds)
-print()
-print("Model predicts a \"" + str(np.argmax(preds[0])) + "\" with prob = " + str(preds[0][np.argmax(preds)]))
+    # preprocessing
+    img = keras.preprocessing.image.load_img(path, target_size=(64, 64))
+    x = keras.preprocessing.image.img_to_array(img)
+    x = np.expand_dims(x, axis=0)
+    x = keras.utils.normalize(x)
+    
+    # make prediction
+    preds = model.predict(x)
+    print("Multi-class prediction vector [p(0), p(1), p(2), p(3), p(4), p(5)] : ")
+    print(preds)
+    print("Model predicts a \"{}\" with {:.2f}% probability".format(np.argmax(preds[0]), preds[0][np.argmax(preds)] * 100))
+
+@click.command()
+@click.argument('image_path', type=click.Path(exists=True))
+def main(image_path):
+    resnet50 = keras.models.load_model('models/resnet50.h5')
+    make_prediction(resnet50, image_path)
+
+if __name__ == '__main__':
+    main()
