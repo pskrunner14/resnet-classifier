@@ -13,19 +13,19 @@ The main benefit of a very deep network is that it can represent very complex fu
 In ResNets, a "shortcut" or a "skip connection" allows the gradient to be directly backpropagated to earlier layers:
 
 <div align="center">
-   <img src="./images/skip_connection_kiank.png" width=450 height=250>
+   <img src="./images/skip_connection_kiank.png" width=700 height=250>
 </div>
 
 The "identity block" is the standard block used in ResNets, and corresponds to the case where the input activation (say a[l]) has the same dimension as the output activation (say a[l+2]):
 
 <div align="center">
-   <img src="./images/idblock2_kiank.png" width=450 height=250>
+   <img src="./images/idblock2_kiank.png" width=700 height=250>
 </div>
 
 Next, the ResNet "convolutional block" is the other type of block. You can use this type of block when the input and output dimensions don't match up. The difference here is that there is a CONV2D layer in the shortcut path:
 
 <div align="center">
-   <img src="./images/convblock_kiank.png" width=450 height=250>
+   <img src="./images/convblock_kiank.png" width=700 height=250>
 </div>
 
 The detailed structure of this ResNet-50 model:
