@@ -4,6 +4,7 @@ keras
 tensorflow
 scipy
 h5py
+tqdm
 matplotlib
 pydot
 graphviz
