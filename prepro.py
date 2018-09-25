@@ -20,17 +20,27 @@ resolution = 128
     type=click.Path(exists=True), 
     help='Path for your Image Dataset'
 )
-def main(dataset_path):
+@click.option(
+    '-df',
+    '--make-datafiles',
+    is_flag=True,
+    help='Flag for converting dataset into h5 files'
+)
+def main(dataset_path, make_datafiles):
     LOG_FORMAT = '%(levelname)s %(message)s'
     logging.basicConfig(format=LOG_FORMAT, level='INFO')
     augment_images(dataset_path)
     move_images(dataset_path)
-    # sets = ['train', 'val', 'test']
-    # for set_name in sets:
-    #     process_image_dataset(dataset_path='{}/{}'
-    #         .format(dataset_path, set_name), set_name=set_name)
+    if make_datafiles:
+        sets = ['train', 'val', 'test']
+        for set_name in sets:
+            process_image_dataset(dataset_path='{}/{}'
+                .format(dataset_path, set_name), set_name=set_name)
     logging.info('Done preprocessing!')
 
+"""
+Augment Images
+"""
 def augment_images(dataset_path):
     categories = os.listdir('{}/train'.format(dataset_path))
 
@@ -44,24 +54,30 @@ def augment_images(dataset_path):
             fill_mode='nearest')
 
     for category in tqdm(categories, total=len(categories), desc='Augmenting Images'):
-        if len(os.listdir('{}/train/{}'.format(dataset_path, category))) < 300:
-            for image_path in os.listdir('{}/train/{}'.format(dataset_path, category)):
-                img = keras.preprocessing.image.load_img('{}/train/{}/{}'
+        num_images = len(os.listdir('{}/train/{}'.format(dataset_path, category)))
+        if num_images < 800:
+            images_to_augment = os.listdir('{}/train/{}'.format(dataset_path, category))
+            num_augments_per_image = (800 - num_images) / num_images
+            if num_augments_per_image == 0:
+                images_to_augment = np.random.choice(images_to_augment, (800 - num_images))
+                num_augments_per_image = 1
+            for image_path in images_to_augment:
+                image = keras.preprocessing.image.load_img('{}/train/{}/{}'
                         .format(dataset_path, category, image_path))
-                x = keras.preprocessing.image.img_to_array(img)  # this is a Numpy array with shape (3, 150, 150)
-                x = x.reshape((1,) + x.shape)  # this is a Numpy array with shape (1, 3, 150, 150)
-
-                # the .flow() command below generates batches of randomly transformed images
-                # and saves the results to the `preview/` directory
+                x = keras.preprocessing.image.img_to_array(image)
+                x = x.reshape((1,) + x.shape)
                 i = 0
-                for _ in datagen.flow(x, batch_size=1, save_to_dir='{}/train/{}'
-                                    .format(dataset_path, category), save_prefix=image_path[:-4], 
-                                    save_format='jpg'):
+                for _ in datagen.flow(x, batch_size=1,
+                    save_to_dir='{}/train/{}'.format(dataset_path, category), 
+                    save_prefix=image_path[:-4], save_format='jpg'):
                     i += 1
-                    if i > 10:
-                        break  # otherwise the generator would loop indefinitely
+                    if i > num_augments_per_image:
+                        break
     logging.info('Done augmenting images!')
 
+"""
+Move Images into [train, val, test] sets
+"""
 def move_images(dataset_path):
     categories = os.listdir('{}/train'.format(dataset_path))
 
@@ -81,11 +97,17 @@ def move_images(dataset_path):
                     '{}/test/{}/{}'.format(dataset_path, category, image_path))
     logging.info('Done moving images!')
 
+"""
+Preprocess Image
+"""
 def preprocess_image(image):
     x = keras.preprocessing.image.img_to_array(image)
     x = np.expand_dims(x, axis=0)
     return keras_applications.imagenet_utils.preprocess_input(x)[0]
 
+"""
+Process Image Dataset into h5 data files
+"""
 def process_image_dataset(dataset_path=None, set_name='train'):
     if dataset_path is None:
         raise UserWarning('Dataset path should not be None!')
