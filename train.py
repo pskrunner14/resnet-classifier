@@ -33,56 +33,98 @@ Train Model [optional args]
     help='Number of epochs for training model'
 )
 @click.option(
+    '-se',
+    '--save-every',
+    default=1,
+    help='Epoch interval to save model checkpoints during training'
+)
+@click.option(
     '-tb',
     '--tensorboard-vis',
     is_flag=True,
     help='Flag for TensorBoard Visualization'
 )
-def train(learning_rate, batch_size, num_epochs, tensorboard_vis):
+@click.option(
+    '-ps',
+    '--print-summary',
+    is_flag=True,
+    help='Flag for printing summary of the model'
+)
+def train(learning_rate, batch_size, num_epochs, save_every, tensorboard_vis, print_summary):
     datagen = keras.preprocessing.image.ImageDataGenerator(rescale=1./255)
 
     get_gen = lambda x: datagen.flow_from_directory(
-            'datasets/caltech_101/{}'.format(x),
-            target_size=(64, 64),
-            batch_size=batch_size,
-            class_mode='categorical')
+        'datasets/caltech_101/{}'.format(x),
+        target_size=(64, 64),
+        batch_size=batch_size,
+        class_mode='categorical'
+    )
 
+    # generator objects
     train_generator = get_gen('train')
-    validation_generator = get_gen('val')
+    val_generator = get_gen('val')
     test_generator = get_gen('test')
 
     if os.path.exists('models/resnet50.h5'):
         # load model
+        logging.info('Loading pre-trained model')
         resnet50 = keras.models.load_model('models/resnet50.h5')
     else:
         # create model
+        logging.info('Creting model')
         resnet50 = create_model(input_shape=(64, 64, 3), classes=101)
-        optimizer = keras.optimizers.Adam(learning_rate)
+    
+    # define optimizer
+    optimizer = keras.optimizers.Adam(learning_rate)
 
-        resnet50.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
+    # compile model
+    resnet50.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
+    if print_summary:
         resnet50.summary()
 
-    # callbacks for checkpointing and visualization during training
     callbacks = []
     if tensorboard_vis:
+        # tensorboard visualization callback
         tensorboard_cb = keras.callbacks.TensorBoard(log_dir='./logs')
         callbacks.append(tensorboard_cb)
+    
     if not os.path.isdir('models/ckpts'):
+        if not os.path.isdir('models'):
+            os.mkdir('models')
         os.mkdir('models/ckpts')
-    saver_cb = keras.callbacks.ModelCheckpoint('models/ckpts/model', verbose=1, period=5, save_best_only=True)
-    callbacks.append(saver_cb)
+    # checkpoint models at every epoch only when 'val_loss' is better than previous one
+    saver = keras.callbacks.ModelCheckpoint(
+        'models/ckpts/model.ckpt',
+        save_best_only=True,
+        period=save_every,
+        verbose=1
+    )
+    callbacks.append(saver)
+    
+    # reduce LR when 'val_loss' plateaus
+    reduce_lr = keras.callbacks.ReduceLROnPlateau()
+    callbacks.append(reduce_lr)
 
     # train model
-    resnet50.fit_generator(train_generator, steps_per_epoch=72000//batch_size, 
-                            epochs=num_epochs, verbose=1, 
-                            validation_data=validation_generator, 
-                            validation_steps=2200//batch_size, 
-                            shuffle=True, callbacks=callbacks)
+    resnet50.fit_generator(
+        train_generator,
+        steps_per_epoch=72000//batch_size,
+        epochs=num_epochs,
+        verbose=1,
+        validation_data=val_generator,
+        validation_steps=2200//batch_size,
+        shuffle=True,
+        callbacks=callbacks
+    )
     # save model
     resnet50.save('models/resnet50.h5')
 
     # evaluate model
-    preds = resnet50.evaluate_generator(test_generator, steps=2200//batch_size, verbose=1)
+    preds = resnet50.evaluate_generator(
+        test_generator,
+        steps=2200//batch_size,
+        verbose=1
+    )
 
     logging.info('test loss: {}'.format(preds[0]))
     logging.info('test acc: {}'.format(preds[1]))
@@ -91,11 +133,16 @@ def train(learning_rate, batch_size, num_epochs, tensorboard_vis):
 
 def main():
     LOG_FORMAT = '%(levelname)s %(message)s'
-    logging.basicConfig(format=LOG_FORMAT, level='INFO')
+    logging.basicConfig(
+        format=LOG_FORMAT, 
+        level='INFO'
+    )
+
     try:
         train()
     except KeyboardInterrupt:
         print('EXIT')
+    logging.info('Done Training!')
 
 if __name__ == '__main__':
     main()

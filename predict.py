@@ -10,6 +10,9 @@ def main(image_path):
     resnet50 = keras.models.load_model('models/resnet50.h5')
     make_prediction(resnet50, image_path)
 
+"""
+Make Prediction [using pre-trained model]
+"""
 def make_prediction(model, path=None):
     if path is None:
         raise UserWarning('Image path should not be None!')
