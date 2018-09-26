@@ -31,7 +31,8 @@ The detailed structure of this ResNet-50 model (I've also added additional Batch
 ## Dataset
 
 We'll be using the [Caltech 101](http://www.vision.caltech.edu/Image_Datasets/Caltech101/) Multi-Classification Object Dataset. The Dataset is a collection of pictures of objects belonging to 101 different categories. About 40 to 800 images per category. Most categories have about 50 images. Since the number of images for each class is less than sufficient for training our model we'll be using **Data Augmentation** to obtain more images. This is our directory structure:
-```
+
+```yaml
 datasets/
     caltech_101/
         train/
@@ -51,73 +52,80 @@ Our preprocessing script `prepro.py` will handle the rest.
 ## Getting Started
 
 In order to train the model and make predictions, you will need to install the required python packages using:
-```
+
+```bash
 pip install -r requirements.txt
 ```
 
 Now, we need to do some preprocessing (Data Augmentation and Train/Val/Test Split) of our dataset:
-```
+
+```bash
 python prepro.py --dataset-path datasets/caltech_101
 ```
 
-Once you're done with all that, you can open up a terminal and start training the model (it takes a while):
-```
-python train.py -lr 0.005 --num-epochs 50 --batch-size 32 --tensorboard-vis
+Once you're done with all that, you can open up a terminal and start training the model (FYI: it takes a **while**):
+
+```bash
+python train.py -lr 0.005 --num-epochs 50 --batch-size 32 --save-every 5 --tensorboard-vis
 ```
 
 Passing the `--tensorboard-vis` flag allows you to view the training/validation loss and accuracy in you browser using:
-```
+
+```bash
 tensorboard --logdir=./logs
 ```
 
 Once you're done training run the prediction script which will load the pretrained model and make a prediction on your test image:
-```
+
+```bash
 python predict.py images/test.jpg
 ```
 
-<!-- ## Results 
+## Results
 
 Training:
 
-```
-number of training examples = 72893
+```yaml
+number of training examples: 72893
 X_train shape: (72893, 64, 64, 3)
 Y_train shape: (72893, 101)
 ```
 
-```
-number of validation examples = 2020
+```yaml
+number of validation examples: 2020
 X_train shape: (2020, 64, 64, 3)
 Y_train shape: (2020, 101)
 ```
 
 ```
-Epoch 50/50
-2187/2187 [==============================] - 426s 195ms/step - loss: . - acc: . - val_loss: . - val_acc: .
-Loss = .
-Train Accuracy = .% (0.)
+Epoch 50/50:
+2187/2187 [==============================] - 393s 175ms/step - loss: 0.0341 - acc: 0.9888 - val_loss: 0.3118 - val_acc: 0.9311
+
+Val Loss = 0.3118
+Val Accuracy = 93.11% (0.9311)
 ```
 
-Testing:
+<!-- Testing:
 
-```
-number of test examples = 2020
+```yaml
+number of test examples: 2020
 X_test shape: (2020, 64, 64, 3)
 Y_test shape: (2020, 101)
 ```
+
 ```
 120/120 [==============================] - 2s 18ms/step
 Loss = .
 Test Accuracy = .% (.)
-```
+``` -->
 
 Model Parameters:
 
-```
+```yaml
 Total params: 23,794,661
 Trainable params: 23,741,541
 Non-trainable params: 53,120
-``` -->
+```
 
 ## Built With
 

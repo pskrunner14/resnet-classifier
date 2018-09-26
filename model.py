@@ -41,7 +41,7 @@ def create_model(input_shape=(64, 64, 3), classes=102):
     X = identity_block(X, 3, [256, 256, 1024], stage=4, block='f')
     
     # Stage 5
-    X = convolutional_block(X, f = 3, filters= [512, 512, 2048], stage=5, block='a', s=2)
+    X = convolutional_block(X, f = 3, filters=[512, 512, 2048], stage=5, block='a', s=2)
     X = identity_block(X, 3, [512, 512, 2048], stage=5, block='b')
     X = identity_block(X, 3, [512, 512, 2048], stage=5, block='c')
 

@@ -71,7 +71,7 @@ def train(learning_rate, batch_size, num_epochs, save_every, tensorboard_vis, pr
         resnet50 = keras.models.load_model('models/resnet50.h5')
     else:
         # create model
-        logging.info('Creting model')
+        logging.info('Creating model')
         resnet50 = create_model(input_shape=(64, 64, 3), classes=101)
     
     # define optimizer
@@ -85,27 +85,38 @@ def train(learning_rate, batch_size, num_epochs, save_every, tensorboard_vis, pr
     callbacks = []
     if tensorboard_vis:
         # tensorboard visualization callback
-        tensorboard_cb = keras.callbacks.TensorBoard(log_dir='./logs')
+        tensorboard_cb = keras.callbacks.TensorBoard(
+            log_dir='./logs',
+            write_graph=True,
+            write_images=True
+        )
         callbacks.append(tensorboard_cb)
     
     if not os.path.isdir('models/ckpts'):
         if not os.path.isdir('models'):
             os.mkdir('models')
         os.mkdir('models/ckpts')
-    # checkpoint models at every epoch only when 'val_loss' is better than previous one
+    # checkpoint models at every epoch only when `val_loss` is better than previous one
     saver = keras.callbacks.ModelCheckpoint(
         'models/ckpts/model.ckpt',
+        monitor='val_loss',
         save_best_only=True,
         period=save_every,
         verbose=1
     )
     callbacks.append(saver)
     
-    # reduce LR when 'val_loss' plateaus
-    reduce_lr = keras.callbacks.ReduceLROnPlateau()
+    # reduce LR when `val_loss` plateaus (3 epoch intervals)
+    reduce_lr = keras.callbacks.ReduceLROnPlateau(
+        monitor='val_loss',
+        factor=0.1,
+        patience=3,
+        verbose=1
+    )
     callbacks.append(reduce_lr)
 
     # train model
+    logging.info('Training model')
     resnet50.fit_generator(
         train_generator,
         steps_per_epoch=72000//batch_size,
@@ -117,9 +128,11 @@ def train(learning_rate, batch_size, num_epochs, save_every, tensorboard_vis, pr
         callbacks=callbacks
     )
     # save model
+    logging.info('Saving trained model to `models/resnet50.h5`')
     resnet50.save('models/resnet50.h5')
 
     # evaluate model
+    logging.info('Evaluating model')
     preds = resnet50.evaluate_generator(
         test_generator,
         steps=2200//batch_size,
@@ -130,6 +143,7 @@ def train(learning_rate, batch_size, num_epochs, save_every, tensorboard_vis, pr
     logging.info('test acc: {}'.format(preds[1]))
 
     keras.utils.plot_model(resnet50, to_file='models/resnet50.png')
+    logging.info('Done Training!')
 
 def main():
     LOG_FORMAT = '%(levelname)s %(message)s'
@@ -142,7 +156,6 @@ def main():
         train()
     except KeyboardInterrupt:
         print('EXIT')
-    logging.info('Done Training!')
 
 if __name__ == '__main__':
     main()
