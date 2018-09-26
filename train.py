@@ -67,18 +67,16 @@ def train(learning_rate, batch_size, num_epochs, save_every, tensorboard_vis, pr
 
     if os.path.exists('models/resnet50.h5'):
         # load model
-        logging.info('Loading pre-trained model')
+        logging.info('loading pre-trained model')
         resnet50 = keras.models.load_model('models/resnet50.h5')
     else:
         # create model
-        logging.info('Creating model')
+        logging.info('creating model')
         resnet50 = create_model(input_shape=(64, 64, 3), classes=101)
     
-    # define optimizer
     optimizer = keras.optimizers.Adam(learning_rate)
-
-    # compile model
     resnet50.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
+    
     if print_summary:
         resnet50.summary()
 
@@ -106,17 +104,17 @@ def train(learning_rate, batch_size, num_epochs, save_every, tensorboard_vis, pr
     )
     callbacks.append(saver)
     
-    # reduce LR when `val_loss` plateaus (3 epoch intervals)
+    # reduce LR when `val_loss` plateaus
     reduce_lr = keras.callbacks.ReduceLROnPlateau(
         monitor='val_loss',
         factor=0.1,
-        patience=3,
+        patience=10,
         verbose=1
     )
     callbacks.append(reduce_lr)
 
     # train model
-    logging.info('Training model')
+    logging.info('training model')
     resnet50.fit_generator(
         train_generator,
         steps_per_epoch=72000//batch_size,
@@ -132,18 +130,15 @@ def train(learning_rate, batch_size, num_epochs, save_every, tensorboard_vis, pr
     resnet50.save('models/resnet50.h5')
 
     # evaluate model
-    logging.info('Evaluating model')
+    logging.info('evaluating model')
     preds = resnet50.evaluate_generator(
         test_generator,
         steps=2200//batch_size,
         verbose=1
     )
-
-    logging.info('test loss: {}'.format(preds[0]))
-    logging.info('test acc: {}'.format(preds[1]))
+    logging.info('test loss: {:.4f} - test acc: {:.4f}'.format(preds[0], preds[1]))
 
     keras.utils.plot_model(resnet50, to_file='models/resnet50.png')
-    logging.info('Done Training!')
 
 def main():
     LOG_FORMAT = '%(levelname)s %(message)s'

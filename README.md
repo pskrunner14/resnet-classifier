@@ -105,7 +105,7 @@ Val Loss = 0.3118
 Val Accuracy = 93.11% (0.9311)
 ```
 
-<!-- Testing:
+Testing:
 
 ```yaml
 number of test examples: 2020
@@ -114,10 +114,10 @@ Y_test shape: (2020, 101)
 ```
 
 ```
-120/120 [==============================] - 2s 18ms/step
-Loss = .
-Test Accuracy = .% (.)
-``` -->
+68/68 [==============================] - 30s 437ms/step
+Loss = 0.3213
+Test Accuracy = 92.97% (0.9297)
+```
 
 Model Parameters:
 
