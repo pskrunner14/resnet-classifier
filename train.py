@@ -13,7 +13,7 @@ K.set_image_data_format('channels_last')
 """
 Train Model [optional args]
 """
-@click.command()
+@click.command(name='Training Configuration')
 @click.option(
     '-lr', 
     '--learning-rate', 
