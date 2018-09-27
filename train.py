@@ -51,6 +51,8 @@ Train Model [optional args]
     help='Flag for printing summary of the model'
 )
 def train(learning_rate, batch_size, num_epochs, save_every, tensorboard_vis, print_summary):
+    setup_paths()
+
     datagen = keras.preprocessing.image.ImageDataGenerator(rescale=1./255)
 
     get_gen = lambda x: datagen.flow_from_directory(
@@ -80,38 +82,7 @@ def train(learning_rate, batch_size, num_epochs, save_every, tensorboard_vis, pr
     if print_summary:
         resnet50.summary()
 
-    callbacks = []
-    if tensorboard_vis:
-        # tensorboard visualization callback
-        tensorboard_cb = keras.callbacks.TensorBoard(
-            log_dir='./logs',
-            write_graph=True,
-            write_images=True
-        )
-        callbacks.append(tensorboard_cb)
-    
-    if not os.path.isdir('models/ckpts'):
-        if not os.path.isdir('models'):
-            os.mkdir('models')
-        os.mkdir('models/ckpts')
-    # checkpoint models at every epoch only when `val_loss` is better than previous one
-    saver = keras.callbacks.ModelCheckpoint(
-        'models/ckpts/model.ckpt',
-        monitor='val_loss',
-        save_best_only=True,
-        period=save_every,
-        verbose=1
-    )
-    callbacks.append(saver)
-    
-    # reduce LR when `val_loss` plateaus
-    reduce_lr = keras.callbacks.ReduceLROnPlateau(
-        monitor='val_loss',
-        factor=0.1,
-        patience=10,
-        verbose=1
-    )
-    callbacks.append(reduce_lr)
+    callbacks = configure_callbacks(save_every, tensorboard_vis)
 
     # train model
     logging.info('training model')
@@ -139,6 +110,55 @@ def train(learning_rate, batch_size, num_epochs, save_every, tensorboard_vis, pr
     logging.info('test loss: {:.4f} - test acc: {:.4f}'.format(preds[0], preds[1]))
 
     keras.utils.plot_model(resnet50, to_file='models/resnet50.png')
+
+"""
+Configure Callbacks for Training
+"""
+def configure_callbacks(save_every=1, tensorboard_vis=False):
+    # checkpoint models only when `val_loss` impoves
+    saver = keras.callbacks.ModelCheckpoint(
+        'models/ckpts/model.ckpt',
+        monitor='val_loss',
+        save_best_only=True,
+        period=save_every,
+        verbose=1
+    )
+    
+    # reduce LR when `val_loss` plateaus
+    reduce_lr = keras.callbacks.ReduceLROnPlateau(
+        monitor='val_loss',
+        factor=0.1,
+        patience=5,
+        verbose=1,
+        min_lr=1e-10
+    )
+
+    # early stopping when `val_loss` stops improving
+    early_stopper = keras.callbacks.EarlyStopping(
+        monitor='val_loss', 
+        min_delta=0, 
+        patience=10, 
+        verbose=1
+    )
+
+    callbacks = [saver, reduce_lr, early_stopper]
+
+    if tensorboard_vis:
+        # tensorboard visualization callback
+        tensorboard_cb = keras.callbacks.TensorBoard(
+            log_dir='./logs',
+            write_graph=True,
+            write_images=True
+        )
+        callbacks.append(tensorboard_cb)
+    
+    return callbacks
+
+def setup_paths():
+    if not os.path.isdir('models/ckpts'):
+        if not os.path.isdir('models'):
+            os.mkdir('models')
+        os.mkdir('models/ckpts')
 
 def main():
     LOG_FORMAT = '%(levelname)s %(message)s'
